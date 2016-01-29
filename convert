@@ -8,7 +8,7 @@ class Node:
   pass
 
 def parseStream(string):
-  parsedObject = Node()
+  parsedStream = Node()
   for field in string.split("|"):
     fieldPair = field.split("=")
     if len(fieldPair) == 2:
@@ -16,15 +16,15 @@ def parseStream(string):
       keyPair = key.split(":")
       if len(keyPair) == 2:
         [superKey, subKey] = keyPair
-        if hasattr(parsedObject, superKey):
-          node = getattr(parsedObject, superKey)
+        if hasattr(parsedStream, superKey):
+          node = getattr(parsedStream, superKey)
         else:
           node = Node()
-          setattr(parsedObject, superKey, node)
+          setattr(parsedStream, superKey, node)
         setattr(node, subKey, value)
       else:
-        setattr(parsedObject, key, value)
-  return parsedObject
+        setattr(parsedStream, key, value)
+  return parsedStream
 
 infile = sys.argv[1]
 streams = []
