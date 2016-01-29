@@ -1,0 +1,36 @@
+#!/usr/bin/python
+
+import subprocess
+import os
+import sys
+
+class Node:
+  pass
+
+def parseStream(string):
+  parsedObject = Node()
+  for field in string.split("|"):
+    fieldPair = field.split("=")
+    if len(fieldPair) == 2:
+      [key, value] = fieldPair
+      keyPair = key.split(":")
+      if len(keyPair) == 2:
+        [superKey, subKey] = keyPair
+        if hasattr(parsedObject, superKey):
+          node = getattr(parsedObject, superKey)
+        else:
+          node = Node()
+          setattr(parsedObject, superKey, node)
+        setattr(node, subKey, value)
+      else:
+        setattr(parsedObject, key, value)
+  return parsedObject
+
+infile = sys.argv[1]
+streams = []
+ffprobe = subprocess.Popen(
+  ["ffprobe", "-show_streams", "-print_format", "compact", infile],
+  stdout = subprocess.PIPE,
+  stderr = open(os.devnull, 'w'))
+for line in ffprobe.stdout:
+  streams.append(parseStream(line.strip()))
