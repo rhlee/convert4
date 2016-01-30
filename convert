@@ -40,7 +40,7 @@ try:
 except:
   database = []
 
-record = None
+found = None
 for index, currentRecord in enumerate(database):
   name = currentRecord["name"]
   minimumLength = min(len(basename), len(name))
@@ -51,13 +51,14 @@ for index, currentRecord in enumerate(database):
   if matches.count(True) >= Constants.MINIMUMMATCHES:
     currentRecord["name"] = str().\
       join([name[i] if matches[i] else "*" for i in range(0, minimumLength)])
-    record = currentRecord
-if not record:
+    found = index
+    break
+if type(found) is int:
+  record = database.pop(found)
+else:
   record = {"name": basename}
 
-print record
 database.append(record)
-
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
   databaseFile.write(json.dumps(database, indent = 2))
 
