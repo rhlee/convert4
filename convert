@@ -4,10 +4,12 @@ import subprocess
 import os
 import sys
 import json
+import re
 
 class Constants:
   DATABASEFILENAME = "database"
   MINIMUMMATCHES = 15
+  NOSUBSREGEX = ["^bbc", "\.mp4$"]
 
 class Node:
   pass
@@ -57,6 +59,15 @@ if type(found) is int:
   record = database.pop(found)
 else:
   record = {"name": basename}
+  nosubs = False
+  for regex in Constants.NOSUBSREGEX:
+    if re.search(re.compile(regex, re.IGNORECASE), basename):
+      nosubs = True
+      break
+  if nosubs:
+    record["nosubs"] = True
+  else:
+    exit(1)
 
 database.append(record)
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
