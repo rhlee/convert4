@@ -5,6 +5,10 @@ import os
 import sys
 import json
 
+class Constants:
+  DATABASEFILENAME = "database"
+  MINIMUMMATCHES = 15
+
 class Node:
   pass
 
@@ -28,23 +32,33 @@ def parseStream(string):
   return parsedStream
 
 filename = sys.argv[1]
+basename = os.path.basename(filename)
 
 try:
-  with open("database", "r") as databaseFile:
+  with open(Constants.DATABASEFILENAME, "r") as databaseFile:
     database = json.loads(databaseFile.read())
 except:
   database = []
 
 record = None
-for data in database:
-  pass
-
+for index, currentRecord in enumerate(database):
+  name = currentRecord["name"]
+  minimumLength = min(len(basename), len(name))
+  matches = [False] * minimumLength
+  for i in range(0, minimumLength):
+    if basename[i] == name[i]:
+      matches[i] = True
+  if matches.count(True) >= Constants.MINIMUMMATCHES:
+    currentRecord["name"] = str().\
+      join([name[i] if matches[i] else "*" for i in range(0, minimumLength)])
+    record = currentRecord
 if not record:
-  record = {"name": filename}
+  record = {"name": basename}
 
+print record
 database.append(record)
 
-with open("database", "w") as databaseFile:
+with open(Constants.DATABASEFILENAME, "w") as databaseFile:
   databaseFile.write(json.dumps(database, indent = 2))
 
 streams = []
