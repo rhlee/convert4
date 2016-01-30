@@ -67,16 +67,23 @@ else:
   if nosubs:
     record["nosubs"] = True
   else:
+    streams = []
+    ffprobe = subprocess.Popen(
+      ["ffprobe", "-show_streams", "-print_format", "compact", filename],
+      stdout = subprocess.PIPE,
+      stderr = open(os.devnull, 'w'))
+    for line in ffprobe.stdout:
+      streams.append(parseStream(line.strip()))
+    ffprobe.wait()
+    audioStreams = \
+      [stream for stream in streams if stream.codec_type == "audio"]
+    if len(audioStreams) == 1:
+      audioStream = audioStreams[0]
+    else:
+      audioStream = \
+        [stream for stream in audioStreams if stream.tag.language != "eng"][0]
     exit(1)
 
 database.append(record)
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
   databaseFile.write(json.dumps(database, indent = 2))
-
-streams = []
-ffprobe = subprocess.Popen(
-  ["ffprobe", "-show_streams", "-print_format", "compact", filename],
-  stdout = subprocess.PIPE,
-  stderr = open(os.devnull, 'w'))
-for line in ffprobe.stdout:
-  streams.append(parseStream(line.strip()))
