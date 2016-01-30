@@ -3,6 +3,7 @@
 import subprocess
 import os
 import sys
+import json
 
 class Node:
   pass
@@ -26,10 +27,29 @@ def parseStream(string):
         setattr(parsedStream, key, value)
   return parsedStream
 
-infile = sys.argv[1]
+filename = sys.argv[1]
+
+try:
+  with open("database", "r") as databaseFile:
+    database = json.loads(databaseFile.read())
+except:
+  database = []
+
+record = None
+for data in database:
+  pass
+
+if not record:
+  record = {"name": filename}
+
+database.append(record)
+
+with open("database", "w") as databaseFile:
+  databaseFile.write(json.dumps(database, indent = 2))
+
 streams = []
 ffprobe = subprocess.Popen(
-  ["ffprobe", "-show_streams", "-print_format", "compact", infile],
+  ["ffprobe", "-show_streams", "-print_format", "compact", filename],
   stdout = subprocess.PIPE,
   stderr = open(os.devnull, 'w'))
 for line in ffprobe.stdout:
