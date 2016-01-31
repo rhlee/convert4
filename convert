@@ -137,7 +137,7 @@ with open(Constants.DATABASEFILENAME, "w") as databaseFile:
   databaseFile.write(json.dumps(database, indent = 2))
 
 if record["burn"]:
-  mplayerCommands = ["mplayer", "-nosound", "-benchmark", "-really-quiet",
+  mplayerArguments = ["mplayer", "-nosound", "-benchmark", "-really-quiet",
     "-vo", "yuv4mpeg:file=/dev/stdout", "-sid", str(record["subtitle"]),
     "--ass-force-style=" + ("Default." if record["default"] else "") +
       "BackgroundColour=H77444444"]
@@ -147,9 +147,11 @@ if record["burn"]:
     stdout = subprocess.PIPE,
     stderr = open(os.devnull, 'w'))
   ffmpeg = subprocess.Popen(
-    ["ffmpeg", "-y", "-i", "-", "-i", filename,
+    ["ffmpeg", "-y", "-r", "25", "-i", "-", "-i", filename,
       "-map", "0", "-map", "1:" + str(record["audio"]),
-      "-q:v", "15", "-c:a", "copy", basename],
+      "-q:v", "15",
+      "-filter:a", "atempo=" + str(record["speed"]) , "-b:a", "128k",
+      basename],
     stdin = mplayer.stdout)
   ffmpeg.wait()
 else:
