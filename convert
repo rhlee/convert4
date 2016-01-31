@@ -47,21 +47,24 @@ except:
 
 found = None
 for index, currentRecord in enumerate(database):
-  name = currentRecord["name"]
+  name = currentRecord.keys()[0]
   minimumLength = min(len(basename), len(name))
   matches = [False] * minimumLength
   for i in range(0, minimumLength):
     if basename[i] == name[i]:
       matches[i] = True
   if matches.count(True) >= Constants.MINIMUMMATCHESNAME:
-    currentRecord["name"] = str().\
-      join([name[i] if matches[i] else "*" for i in range(0, minimumLength)])
+    currentRecord[
+        str().join([name[i] if matches[i] else "*"
+          for i in range(0, minimumLength)])] = \
+      currentRecord.pop(name)
     found = index
     break
 if type(found) is int:
   record = database.pop(found)
 else:
-  record = {"name": basename}
+  fields = {}
+  record = {basename: fields}
 
   streams = []
   ffprobe = subprocess.Popen(
@@ -72,12 +75,12 @@ else:
     streams.append(parseObject(line.strip()))
   ffprobe.wait()
 
-  record["burn"] = True
+  fields["burn"] = True
   for regex in Constants.NOSUBSREGEX:
     if re.search(re.compile(regex, re.IGNORECASE), basename):
-      record["burn"] = False
+      fields["burn"] = False
       break
-  if record["burn"]:
+  if fields["burn"]:
     subtitleStreams = \
       [stream for stream in streams if stream.codec_type == "subtitle"]
 
@@ -98,9 +101,9 @@ else:
       frame = parseObject(line.strip())
       fps = int(frame.coded_picture_number) / float(frame.pkt_pts_time)
     assert abs(fps - 24) < Constants.TOLERANCE
-    record["speed"] = 25 / fps
+    fields["speed"] = 25 / fps
 
-    record["scale"] = int(videoStream.coded_height) > 720
+    fields["scale"] = int(videoStream.coded_height) > 720
 
     if len(subtitleStreams) == 1:
       subtitleStream = subtitleStreams[0]
@@ -108,7 +111,7 @@ else:
       subtitleStream = \
         [stream for stream in subtitleStreams
           if stream.tag.language == "eng"][1]
-    record["subtitle"] = subtitleStreams.index(subtitleStream)
+    fields["subtitle"] = subtitleStreams.index(subtitleStream)
     ffmpeg = subprocess.Popen(
       ["ffmpeg", "-i", filename, "-map", "0:" + subtitleStream.index,
         "-vn", "-an", "-f", "ass", "-"],
@@ -122,7 +125,7 @@ else:
         if section == "Dialogue":
           if data.split(",")[3] == "Default":
             matches += 1
-    record["default"] = matches > Constants.MINIMUMMATCHESEVENT
+    fields["default"] = matches > Constants.MINIMUMMATCHESEVENT
 
     audioStreams = \
       [stream for stream in streams if stream.codec_type == "audio"]
@@ -131,7 +134,7 @@ else:
     else:
       audioStream = \
         [stream for stream in audioStreams if stream.tag.language != "eng"][0]
-    record["audio"] = int(audioStream.index)
+    fields["audio"] = int(audioStream.index)
 
 database.append(record)
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
