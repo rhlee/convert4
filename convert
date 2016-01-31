@@ -62,6 +62,7 @@ for index, currentRecord in enumerate(database):
     break
 if type(found) is int:
   record = database.pop(found)
+  fields = record.values()[0]
 else:
   fields = {}
   record = {basename: fields}
