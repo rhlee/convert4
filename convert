@@ -110,7 +110,7 @@ else:
     else:
       audioStream = \
         [stream for stream in audioStreams if stream.tag.language != "eng"][0]
-    exit(1)
+    record["audio"] = int(audioStream.index)
 
   videoStream = \
     [stream for stream in streams if stream.codec_type == "video"][0]
