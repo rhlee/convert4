@@ -75,6 +75,11 @@ else:
     for line in ffprobe.stdout:
       streams.append(parseStream(line.strip()))
     ffprobe.wait()
+
+    videoStream = \
+      [stream for stream in streams if stream.codec_type == "video"][0]
+    print videoStream.coded_height
+    
     audioStreams = \
       [stream for stream in streams if stream.codec_type == "audio"]
     if len(audioStreams) == 1:
