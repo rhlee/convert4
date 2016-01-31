@@ -86,6 +86,7 @@ else:
       subtitleStream = \
         [stream for stream in subtitleStreams
           if stream.tag.language == "eng"][1]
+    record["subtitle"] = subtitleStreams.index(subtitleStream)
     ffmpeg = subprocess.Popen(
       ["ffmpeg", "-i", filename, "-map", "0:" + subtitleStream.index,
         "-vn", "-an", "-f", "ass", "-"],
