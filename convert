@@ -11,12 +11,13 @@ class Constants:
   MINIMUMMATCHESNAME = 15
   MINIMUMMATCHESEVENT = 10
   NOSUBSREGEX = ["^bbc", "\.mp4$"]
+  TOLERANCE = 0.1
 
 class Node:
   pass
 
-def parseStream(string):
-  parsedStream = Node()
+def parseObject(string):
+  parsedObject = Node()
   for field in string.split("|"):
     fieldPair = field.split("=")
     if len(fieldPair) == 2:
@@ -24,15 +25,15 @@ def parseStream(string):
       keyPair = key.split(":")
       if len(keyPair) == 2:
         [superKey, subKey] = keyPair
-        if hasattr(parsedStream, superKey):
-          node = getattr(parsedStream, superKey)
+        if hasattr(parsedObject, superKey):
+          node = getattr(parsedObject, superKey)
         else:
           node = Node()
-          setattr(parsedStream, superKey, node)
+          setattr(parsedObject, superKey, node)
         setattr(node, subKey, value)
       else:
-        setattr(parsedStream, key, value)
-  return parsedStream
+        setattr(parsedObject, key, value)
+  return parsedObject
 
 filename = sys.argv[1]
 basename = os.path.basename(filename)
@@ -67,7 +68,7 @@ else:
     stdout = subprocess.PIPE,
     stderr = open(os.devnull, 'w'))
   for line in ffprobe.stdout:
-    streams.append(parseStream(line.strip()))
+    streams.append(parseObject(line.strip()))
   ffprobe.wait()
 
   record["burn"] = True
@@ -78,6 +79,28 @@ else:
   if record["burn"]:
     subtitleStreams = \
       [stream for stream in streams if stream.codec_type == "subtitle"]
+
+    videoStream = \
+      [stream for stream in streams if stream.codec_type == "video"][0]
+
+    fpsRational = \
+      [int(number) for number in videoStream.r_frame_rate.split("/")]
+    fps = fpsRational[0] / float(fpsRational[1])
+    if fpsRational != [24000, 1001]:
+      ffprobe = subprocess.Popen(
+        ["ffprobe", "-show_frames", "-print_format", "compact", filename],
+        stdout = subprocess.PIPE,
+        stderr = open(os.devnull, 'w'))
+      lastLine = None
+      for line in ffprobe.stdout:
+        lastLine = line
+      frame = parseObject(line.strip())
+      fps = int(frame.coded_picture_number) / float(frame.pkt_pts_time)
+    assert abs(fps - 24) < Constants.TOLERANCE
+    record["speed"] = 25 / fps
+
+    record["scale"] = int(videoStream.coded_height) > 720
+
     if len(subtitleStreams) == 1:
       subtitleStream = subtitleStreams[0]
     else:
@@ -108,10 +131,6 @@ else:
       audioStream = \
         [stream for stream in audioStreams if stream.tag.language != "eng"][0]
     record["audio"] = int(audioStream.index)
-
-  videoStream = \
-    [stream for stream in streams if stream.codec_type == "video"][0]
-  record["scale"] = int(videoStream.coded_height) > 720
 
 database.append(record)
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
