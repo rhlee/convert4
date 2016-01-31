@@ -98,8 +98,7 @@ else:
         if section == "Dialogue":
           if data.split(",")[3] == "Default":
             matches += 1
-    if matches > Constants.MINIMUMMATCHESEVENT:
-      record["default"] = True
+    record["default"] = matches > Constants.MINIMUMMATCHESEVENT
 
     audioStreams = \
       [stream for stream in streams if stream.codec_type == "audio"]
