@@ -76,6 +76,11 @@ else:
     streams.append(parseObject(line.strip()))
   ffprobe.wait()
 
+  videoStream = \
+    [stream for stream in streams if stream.codec_type == "video"][0]
+
+  fields["scale"] = int(videoStream.coded_height) > 720
+
   fields["burn"] = True
   for regex in Constants.NOSUBSREGEX:
     if re.search(re.compile(regex, re.IGNORECASE), basename):
@@ -84,9 +89,6 @@ else:
   if fields["burn"]:
     subtitleStreams = \
       [stream for stream in streams if stream.codec_type == "subtitle"]
-
-    videoStream = \
-      [stream for stream in streams if stream.codec_type == "video"][0]
 
     fpsRational = \
       [int(number) for number in videoStream.r_frame_rate.split("/")]
@@ -103,8 +105,6 @@ else:
       fps = int(frame.coded_picture_number) / float(frame.pkt_pts_time)
     assert abs(fps - 24) < Constants.TOLERANCE
     fields["speed"] = 25 / fps
-
-    fields["scale"] = int(videoStream.coded_height) > 720
 
     if len(subtitleStreams) == 1:
       subtitleStream = subtitleStreams[0]
