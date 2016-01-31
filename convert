@@ -160,4 +160,9 @@ if fields["burn"]:
     stdin = mplayer.stdout)
   ffmpeg.wait()
 else:
-  pass
+  ffmpegArguments = ["ffmpeg", "-y", "-i", filename,
+    "-q:v", str(Constants.QUALITY), "-c:a", "copy" , "-c:s", "copy"]
+  if fields["scale"]:
+    ffmpegArguments.extend(["-vf", "scale=-1:720"])
+  ffmpeg = subprocess.Popen(ffmpegArguments + [basename])
+  ffmpeg.wait()
