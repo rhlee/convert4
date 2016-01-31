@@ -69,18 +69,6 @@ else:
     streams.append(parseStream(line.strip()))
   ffprobe.wait()
 
-  videoStream = \
-    [stream for stream in streams if stream.codec_type == "video"][0]
-  print videoStream.coded_height
-
-  audioStreams = \
-    [stream for stream in streams if stream.codec_type == "audio"]
-  if len(audioStreams) == 1:
-    audioStream = audioStreams[0]
-  else:
-    audioStream = \
-      [stream for stream in audioStreams if stream.tag.language != "eng"][0]
-
   nosubs = False
   for regex in Constants.NOSUBSREGEX:
     if re.search(re.compile(regex, re.IGNORECASE), basename):
@@ -89,8 +77,17 @@ else:
   if nosubs:
     record["nosubs"] = True
   else:
+    audioStreams = \
+      [stream for stream in streams if stream.codec_type == "audio"]
+    if len(audioStreams) == 1:
+      audioStream = audioStreams[0]
+    else:
+      audioStream = \
+        [stream for stream in audioStreams if stream.tag.language != "eng"][0]
+    exit(1)
 
-  exit(1)
+  videoStream = \
+    [stream for stream in streams if stream.codec_type == "video"][0]
 
 database.append(record)
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
