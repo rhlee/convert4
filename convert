@@ -70,14 +70,12 @@ else:
     streams.append(parseStream(line.strip()))
   ffprobe.wait()
 
-  nosubs = False
+  subtitles = True
   for regex in Constants.NOSUBSREGEX:
     if re.search(re.compile(regex, re.IGNORECASE), basename):
-      nosubs = True
+      subtitles = False
       break
-  if nosubs:
-    record["nosubs"] = True
-  else:
+  if subtitles:
     subtitleStreams = \
       [stream for stream in streams if stream.codec_type == "subtitle"]
     if len(subtitleStreams) == 1:
