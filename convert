@@ -77,6 +77,15 @@ else:
   if nosubs:
     record["nosubs"] = True
   else:
+    subtitleStreams = \
+      [stream for stream in streams if stream.codec_type == "subtitle"]
+    if len(subtitleStreams) == 1:
+      subtitleStream = subtitleStreams[0]
+    else:
+      subtitleStream = \
+        [stream for stream in subtitleStreams
+          if stream.tag.language == "eng"][0]
+
     audioStreams = \
       [stream for stream in streams if stream.codec_type == "audio"]
     if len(audioStreams) == 1:
