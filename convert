@@ -112,6 +112,7 @@ else:
 
   videoStream = \
     [stream for stream in streams if stream.codec_type == "video"][0]
+  record["scale"] = int(videoStream.coded_height) > 720
 
 database.append(record)
 with open(Constants.DATABASEFILENAME, "w") as databaseFile:
