@@ -12,6 +12,7 @@ class Constants:
   MINIMUMMATCHESEVENT = 10
   NOSUBSREGEX = ["^bbc", "\.mp4$"]
   TOLERANCE = 0.1
+  QUALITY = 4
 
 class Node:
   pass
@@ -149,7 +150,7 @@ if record["burn"]:
   ffmpeg = subprocess.Popen(
     ["ffmpeg", "-y", "-r", "25", "-i", "-", "-i", filename,
       "-map", "0", "-map", "1:" + str(record["audio"]),
-      "-q:v", "15",
+      "-q:v", str(Constants.QUALITY),
       "-filter:a", "atempo=" + str(record["speed"]) , "-b:a", "128k",
       basename],
     stdin = mplayer.stdout)
