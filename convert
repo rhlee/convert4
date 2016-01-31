@@ -142,8 +142,8 @@ if record["burn"]:
     "--ass-force-style=" + ("Default." if record["default"] else "") +
       "BackgroundColour=H77444444"]
   if record["scale"]:
-    mplayerCommands.extend(["-vf", "scale=-2:720"])
-  mplayer = subprocess.Popen(mplayerCommands + [filename],
+    mplayerArguments.extend(["-vf", "scale=-2:720"])
+  mplayer = subprocess.Popen(mplayerArguments + [filename],
     stdout = subprocess.PIPE,
     stderr = open(os.devnull, 'w'))
   ffmpeg = subprocess.Popen(
