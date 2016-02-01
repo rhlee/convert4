@@ -156,6 +156,7 @@ if fields["burn"]:
       "-map", "0", "-map", "1:" + str(fields["audio"]),
       "-q:v", str(Constants.QUALITY),
       "-filter:a", "atempo=" + str(fields["speed"]) , "-q:a", "5",
+      "-map_chapters", "-1",
       basename],
     stdin = mplayer.stdout)
   ffmpeg.wait()
