@@ -13,6 +13,9 @@ class Constants:
   NOSUBSREGEX = ["^bbc", "\.mp4$"]
   TOLERANCE = 0.1
   QUALITY = 4
+  AUDIOFILENAME = "audio.wav"
+  SPEDFILENAME = "sped.wav"
+  SHIFTEDFILENAME = "shifted.wav"
 
 class Node:
   pass
@@ -142,6 +145,18 @@ with open(Constants.DATABASEFILENAME, "w") as databaseFile:
   databaseFile.write(json.dumps(database, indent = 2))
 
 if fields["burn"]:
+  subprocess.Popen(
+      ["mpv", filename, "--no-video", "--audio-channels=2",
+        "--aid", str(fields["audio"]),
+        "-ao", "pcm:file=" + Constants.AUDIOFILENAME]
+    ).wait()
+  subprocess.Popen(
+      ["speed", "1001/960", Constants.AUDIOFILENAME, Constants.SPEDFILENAME]
+    ).wait()
+  subprocess.Popen(
+      ["sox", "-S", Constants.SPEDFILENAME, Constants.SHIFTEDFILENAME,
+        "pitch", "-72.4"]
+    ).wait()
   mplayerArguments = ["mplayer", "-nosound", "-benchmark", "-really-quiet",
     "-vo", "yuv4mpeg:file=/dev/stdout", "-sid", str(fields["subtitle"]),
     "--ass-force-style=" + ("Default." if fields["default"] else "") +
@@ -152,14 +167,15 @@ if fields["burn"]:
     stdout = subprocess.PIPE,
     stderr = open(os.devnull, 'w'))
   ffmpeg = subprocess.Popen(
-    ["ffmpeg", "-y", "-r", "25", "-i", "-", "-i", filename,
-      "-map", "0", "-map", "1:" + str(fields["audio"]),
-      "-q:v", str(Constants.QUALITY),
-      "-filter:a", "atempo=" + str(fields["speed"]) , "-q:a", "5",
-      "-map_chapters", "-1",
+    ["ffmpeg", "-y", "-r", "25", "-i", "-", "-i", Constants.SHIFTEDFILENAME,
+      "-map", "0", "-map", "1", "-q:v", str(Constants.QUALITY), "-q:a", "5",
       basename],
     stdin = mplayer.stdout)
   ffmpeg.wait()
+
+  os.remove(Constants.AUDIOFILENAME)
+  os.remove(Constants.SPEDFILENAME)
+  os.remove(Constants.SHIFTEDFILENAME)
 else:
   ffmpegArguments = ["ffmpeg", "-y", "-i", filename,
     "-q:v", str(Constants.QUALITY), "-c:a", "copy" , "-c:s", "copy"]
