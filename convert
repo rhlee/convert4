@@ -168,7 +168,7 @@ if fields["burn"]:
     stderr = open(os.devnull, 'w'))
   ffmpeg = subprocess.Popen(
     ["ffmpeg", "-y", "-r", "25", "-i", "-", "-i", Constants.SHIFTEDFILENAME,
-      "-map", "0", "-map", "1", "-q:v", str(Constants.QUALITY), "-q:a", "5",
+      "-map", "0", "-map", "1", "-q:v", str(Constants.QUALITY), "-c:a", "flac",
       basename],
     stdin = mplayer.stdout)
   ffmpeg.wait()
