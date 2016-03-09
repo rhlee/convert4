@@ -109,7 +109,8 @@ else:
     assert abs(fps - 24) < Constants.TOLERANCE
     fields["speed"] = 25 / fps
 
-    if len(subtitleStreams) == 1:
+    if (len(subtitleStreams) == 1) or \
+        (not hasattr(subtitleStreams[0].tag, "language")):
       subtitleStream = subtitleStreams[0]
     else:
       subtitleStream = \
