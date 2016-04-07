@@ -49,6 +49,10 @@ except:
   database = []
 
 found = None
+minimumMatchesName = Constants.MINIMUMMATCHESNAME
+group = re.match("\[.*\]", basename)
+if group:
+  minimumMatchesName += len(group.group(0))
 for index, currentRecord in enumerate(database):
   name = currentRecord.keys()[0]
   minimumLength = min(len(basename), len(name))
@@ -56,7 +60,7 @@ for index, currentRecord in enumerate(database):
   for i in range(0, minimumLength):
     if basename[i] == name[i]:
       matches[i] = True
-  if matches.count(True) >= Constants.MINIMUMMATCHESNAME:
+  if matches.count(True) >= minimumMatchesName:
     currentRecord[
         str().join([name[i] if matches[i] else "*"
           for i in range(0, minimumLength)])] = \
