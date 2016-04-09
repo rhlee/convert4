@@ -50,7 +50,7 @@ except:
 
 found = None
 minimumMatchesName = Constants.MINIMUMMATCHESNAME
-group = re.match("\[.*\]", basename)
+group = re.match("\[[^\]]*\]", basename)
 if group:
   minimumMatchesName += len(group.group(0))
 for index, currentRecord in enumerate(database):
